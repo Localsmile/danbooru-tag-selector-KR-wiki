@@ -1,9 +1,12 @@
 // ==UserScript==
-// @name         Danbooru Tag Selector + KR Wiki Tooltip (로컬 AI)
-// @namespace    http://tampermonkey.net/
-// @version      에로롱 v1.1
+// @name         Danbooru Tag Selector + KR Wiki
+// @namespace    https://github.com/Localsmile/danbooru-tag-selector-KR-wiki
+// @version      에로롱 1.1
 // @description  태그 선택/복사 + KR 위키 툴팁
+// @author       Localsmile(로컬AI)
 // @match        https://danbooru.donmai.us/posts/*
+// @downloadURL  https://github.com/Localsmile/danbooru-tag-selector-KR-wiki/raw/refs/heads/main/danbooru-tag-selector.user.js
+// @updateURL    https://github.com/Localsmile/danbooru-tag-selector-KR-wiki/raw/refs/heads/main/danbooru-tag-selector.user.js
 // @grant        GM_xmlhttpRequest
 // @grant        GM_setClipboard
 // @connect      raw.githubusercontent.com

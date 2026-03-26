@@ -1,9 +1,9 @@
 // ==UserScript==
 // @name         Danbooru Tag Selector + KR Wiki
 // @namespace    https://github.com/Localsmile/danbooru-tag-selector-KR-wiki
-// @version      에로롱 1.3
+// @version      에로롱-1.3
 // @description  태그 선택/복사 + KR 위키 툴팁
-// @author       Localsmile(로컬AI)
+// @author       Localsmile
 // @match        https://danbooru.donmai.us/posts/*
 // @downloadURL  https://github.com/Localsmile/danbooru-tag-selector-KR-wiki/raw/refs/heads/main/danbooru-tag-selector.user.js
 // @updateURL    https://github.com/Localsmile/danbooru-tag-selector-KR-wiki/raw/refs/heads/main/danbooru-tag-selector.user.js
@@ -40,6 +40,7 @@
   }
   loadSettings();
 
+  // spaces -> esc 순서. =_= >:( 같은거 건드림
   function formatTag(tag) {
     let t = tag;
     if (settings.useSpaces) t = t.replace(/([a-zA-Z0-9])_|_([a-zA-Z0-9])/g, (m,a,b) => (a||'') + ' ' + (b||''));
@@ -49,6 +50,7 @@
 
   const style = document.createElement('style');
   style.textContent = `
+    /* 리모컨 자리 */
     #content { margin-left: 110px !important; }
     #content img, #content video, #content canvas {
       max-width: 100% !important; height: auto !important;
@@ -291,7 +293,7 @@
       chk.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); toggle(); });
 
       li.addEventListener('click', e => {
-        if (e.target.closest('a.wiki-link')) return;
+        if (e.target.closest('a.wiki-link')) return; // ? 링크만 패스스루
         if (e.target.classList.contains('dtks-chk')) return;
         e.preventDefault(); e.stopPropagation();
         toggle();
@@ -300,6 +302,7 @@
       li.addEventListener('mouseenter', () => { tipT = setTimeout(() => showTip(li, tag), 300); });
       li.addEventListener('mouseleave', hideTip);
 
+      // long press = tooltip on mobile
       li.addEventListener('touchstart', e => {
         lpT = setTimeout(() => { showTip(li, tag); setTimeout(hideTip, 2000); }, 500);
       }, { passive: true });

@@ -43,7 +43,7 @@
   // spaces -> esc 순서. =_= >:( 같은거 건드림
   function formatTag(tag) {
     let t = tag;
-    if (settings.useSpaces) t = t.replace(/(?<=[a-zA-Z0-9])_|_(?=[a-zA-Z0-9])/g, ' ');
+    if (settings.useSpaces) t = t.replace(/([a-zA-Z0-9])_|_([a-zA-Z0-9])/g, (m,a,b) => (a||'') + ' ' + (b||''));
     if (settings.escParens) t = t.replace(/\(([^)]*?)\)/g, '\\($1\\)');
     return t;
   }
@@ -54,6 +54,10 @@
     #content { margin-left: 110px !important; }
     #content img, #content video, #content canvas {
       max-width: 100% !important; height: auto !important;
+    }
+
+    @media (max-width: 768px) {
+      #content { margin-left: 0 !important; }
     }
 
     #tag-list li[class*="tag-type-"] {
@@ -90,6 +94,9 @@
       border: 1.5px solid rgba(255,255,255,.25); border-radius: 3px;
       cursor: pointer; position: relative; z-index: 2;
       transition: border-color .12s, background .12s;
+    }
+    @media (max-width: 768px) {
+      .dtks-chk { width: 24px; height: 24px; border-radius: 4px; }
     }
     .dtks-chk:hover { border-color: rgba(255,255,255,.5); }
     .dtks-chk.on {

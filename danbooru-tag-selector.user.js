@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Danbooru Tag Selector + KR Wiki
 // @namespace    https://github.com/Localsmile/danbooru-tag-selector-KR-wiki
-// @version      에로롱 1.1
+// @version      에로롱 1.2
 // @description  태그 선택/복사 + KR 위키 툴팁
 // @author       Localsmile(로컬AI)
 // @match        https://danbooru.donmai.us/posts/*

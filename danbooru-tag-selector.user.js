@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Danbooru Tag Selector + KR Wiki
 // @namespace    https://github.com/Localsmile/danbooru-tag-selector-KR-wiki
-// @version      에로롱-1.3
+// @version      에로롱-1.4
 // @description  태그 선택/복사 + KR 위키 툴팁
 // @author       Localsmile
 // @match        https://danbooru.donmai.us/posts/*
@@ -31,9 +31,24 @@
   const selected = new Set();
   const krMap = new Map();
 
-  let settings = { useSpaces: false, escParens: false };
+  let settings = {
+    useSpaces: false,
+    escParens: false,
+    // 전체 복사 시 카테고리 필터. General만 기본 on
+    copyCats: { 0: true, 1: false, 3: false, 4: false, 5: false },
+  };
   function loadSettings() {
-    try { Object.assign(settings, JSON.parse(localStorage.getItem(LS_KEY))); } catch {}
+    try {
+      const s = JSON.parse(localStorage.getItem(LS_KEY));
+      if (!s) return;
+      if (typeof s.useSpaces === 'boolean') settings.useSpaces = s.useSpaces;
+      if (typeof s.escParens === 'boolean') settings.escParens = s.escParens;
+      if (s.copyCats && typeof s.copyCats === 'object') {
+        for (const k of [0,1,3,4,5]) {
+          if (typeof s.copyCats[k] === 'boolean') settings.copyCats[k] = s.copyCats[k];
+        }
+      }
+    } catch {}
   }
   function saveSettings() {
     localStorage.setItem(LS_KEY, JSON.stringify(settings));
@@ -147,6 +162,27 @@
     #dtks-bar input[type="checkbox"] {
       accent-color: #6e9fdb; width: 13px; height: 13px; cursor: pointer;
     }
+    #dtks-bar .dtks-cats {
+      display: flex; flex-direction: column; gap: 3px;
+      margin: 2px 0;
+    }
+    #dtks-bar .dtks-cats label {
+      display: flex; align-items: center; gap: 3px;
+      padding: 3px 6px; border-radius: 4px;
+      background: #1f1f2c; border: 1px solid #333;
+      font-size: 10px; cursor: pointer; color: #888;
+      opacity: .5; transition: background .12s, opacity .12s, border-color .12s, color .12s;
+    }
+    #dtks-bar .dtks-cats label:hover { background: #2a2a3a; opacity: 1; }
+    #dtks-bar .dtks-cats label.on { opacity: 1; background: #2a2a3a; }
+    #dtks-bar .dtks-cats label.on[data-cat="0"] { color: #6e9fdb; border-color: #6e9fdb; }
+    #dtks-bar .dtks-cats label.on[data-cat="1"] { color: #e87c7c; border-color: #e87c7c; }
+    #dtks-bar .dtks-cats label.on[data-cat="3"] { color: #c486db; border-color: #c486db; }
+    #dtks-bar .dtks-cats label.on[data-cat="4"] { color: #6eda8a; border-color: #6eda8a; }
+    #dtks-bar .dtks-cats label.on[data-cat="5"] { color: #d4c76a; border-color: #d4c76a; }
+    #dtks-bar .dtks-cats input[type="checkbox"] {
+      width: 11px; height: 11px; margin: 0;
+    }
     #dtks-bar .dtks-cnt {
       color: #6e9fdb; font-weight: 600; font-size: 12px; text-align: center;
     }
@@ -158,6 +194,7 @@
       #dtks-bar button { padding: 5px 8px; font-size: 11px; }
       #dtks-bar label { font-size: 10px; }
       #dtks-bar .dtks-sep { height: auto; width: 1px; min-height: 20px; }
+      #dtks-bar .dtks-cats { flex-direction: row; flex-wrap: wrap; }
     }
   `;
   document.head.appendChild(style);
@@ -187,9 +224,18 @@
 
   const bar = document.createElement('div');
   bar.id = 'dtks-bar';
+  const catOn = c => settings.copyCats[c] ? 'on' : '';
+  const catCk = c => settings.copyCats[c] ? 'checked' : '';
   bar.innerHTML = `
     <span class="dtks-cnt">0</span>
     <button class="dtks-all">전체 복사</button>
+    <div class="dtks-cats">
+      <label data-cat="0" class="${catOn(0)}" title="General"><input type="checkbox" data-cat="0" ${catCk(0)}>일반</label>
+      <label data-cat="4" class="${catOn(4)}" title="Character"><input type="checkbox" data-cat="4" ${catCk(4)}>캐릭</label>
+      <label data-cat="3" class="${catOn(3)}" title="Copyright"><input type="checkbox" data-cat="3" ${catCk(3)}>판권</label>
+      <label data-cat="1" class="${catOn(1)}" title="Artist"><input type="checkbox" data-cat="1" ${catCk(1)}>작가</label>
+      <label data-cat="5" class="${catOn(5)}" title="Meta"><input type="checkbox" data-cat="5" ${catCk(5)}>메타</label>
+    </div>
     <button class="dtks-sel">선택 복사</button>
     <button class="dtks-clr">해제</button>
     <div class="dtks-sep"></div>
@@ -207,6 +253,19 @@
   spChk.addEventListener('change', () => { settings.useSpaces = spChk.checked; saveSettings(); });
   escChk.addEventListener('change', () => { settings.escParens = escChk.checked; saveSettings(); });
 
+  bar.querySelectorAll('.dtks-cats input[type="checkbox"]').forEach(cb => {
+    cb.addEventListener('change', e => {
+      e.stopPropagation();
+      const c = +cb.dataset.cat;
+      settings.copyCats[c] = cb.checked;
+      cb.closest('label').classList.toggle('on', cb.checked);
+      saveSettings();
+    });
+  });
+  bar.querySelectorAll('.dtks-cats label').forEach(lbl => {
+    lbl.addEventListener('click', e => e.stopPropagation());
+  });
+
   const flash = (btn, txt) => {
     btn.textContent = 'Copied'; btn.classList.add('ok');
     setTimeout(() => { btn.textContent = txt; btn.classList.remove('ok'); }, 1200);
@@ -214,8 +273,13 @@
 
   bar.querySelector('.dtks-all').onclick = e => {
     e.stopPropagation();
-    const tags = [...document.querySelectorAll('#tag-list li[class*="tag-type-"] a.search-tag')]
-      .map(a => formatTag(a.textContent.trim().replaceAll(' ', '_')));
+    const tags = [...document.querySelectorAll('#tag-list li[class*="tag-type-"]')]
+      .filter(li => settings.copyCats[catOf(li)])
+      .map(li => {
+        const a = li.querySelector('a.search-tag');
+        return a ? formatTag(a.textContent.trim().replaceAll(' ', '_')) : null;
+      })
+      .filter(Boolean);
     if (!tags.length) return;
     GM_setClipboard(tags.join(', '), 'text');
     flash(e.target, '전체 복사');
